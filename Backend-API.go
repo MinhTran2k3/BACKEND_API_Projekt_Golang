@@ -22,13 +22,12 @@ type CalculationResponse struct {
 
 // Handler für die Berechnung
 func calculatorHandler(w http.ResponseWriter, r *http.Request) {
-	// Überprüfen, ob die Methode POST ist
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Nur POST-Anfragen sind erlaubt", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Anfrage-Body in CalculationRequest dekodieren
 	var calcReq CalculationRequest
 	err := json.NewDecoder(r.Body).Decode(&calcReq)
 	if err != nil {
@@ -36,7 +35,6 @@ func calculatorHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ergebnis berechnen basierend auf der Funktionsweise
 	var calcRes CalculationResponse
 
 	switch calcReq.Funktionsweise {
@@ -55,19 +53,18 @@ func calculatorHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		calcRes.Ergebnis = calcReq.Zahl1 / calcReq.Zahl2 // Division
 	default:
-		// Fehler, wenn die Operation nicht erkannt wird
+
 		calcRes.Fehlernachricht = "Ungültige Operation"
 		http.Error(w, calcRes.Fehlernachricht, http.StatusBadRequest)
 		return
 	}
 
-	// Antwort als JSON zurückgeben
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(calcRes)
 }
 
 func main() {
-	// Der Handler für die Berechnung wird festgelegt
+
 	http.HandleFunc("/taschenrechner", calculatorHandler)
 
 	// Der Server wird auf Port 8080 gestartet
