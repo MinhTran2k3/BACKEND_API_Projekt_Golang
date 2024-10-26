@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -18,6 +19,31 @@ type CalculationRequest struct {
 type CalculationResponse struct {
 	Ergebnis        float64 `json:"Ergebnis"`                  // Ergebnis der Berechnung
 	Fehlernachricht string  `json:"Fehlernachricht,omitempty"` // Optional: Fehlernachricht
+}
+
+func saveCalculation(calcReq CalculationRequest, calcRes CalculationResponse) {
+	// Lade vorhandene Daten
+	var calculations []map[string]interface{}
+	data, err := ioutil.ReadFile("berechnung.json")
+	if err != nil {
+		fmt.Println("Datei konnte nicht gelesen werden")
+		return
+	}
+	json.Unmarshal(data, calculations)
+
+	// Neues Ergebnis zur Liste hinzufügen
+	NeueEingabe := map[string]interface{}{
+		"Funktionsweise":  calcReq.Funktionsweise,
+		"Zahl1":           calcReq.Zahl1,
+		"Zahl2":           calcReq.Zahl2,
+		"Ergebnis":        calcRes.Ergebnis,
+		"Fehlernachricht": calcRes.Fehlernachricht,
+	}
+	calculations = append(calculations, NeueEingabe)
+	updatedData, _ := json.Marshal(calculations)
+	ioutil.WriteFile("berechnung.json", updatedData)
+
+	fmt.Print("Daten wurden gespeichert")
 }
 
 // Handler für die Berechnung
