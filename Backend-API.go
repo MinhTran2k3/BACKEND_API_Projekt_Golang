@@ -24,7 +24,7 @@ type CalculationResponse struct {
 func saveCalculation(calcReq CalculationRequest, calcRes CalculationResponse) {
 
 	var calculations []map[string]interface{}
-	data, err := os.ReadFile("berechnung.json")
+	data, err := os.ReadFile("Berechnung.json")
 	if err == nil {
 		json.Unmarshal(data, &calculations)
 	}
@@ -44,7 +44,7 @@ func saveCalculation(calcReq CalculationRequest, calcRes CalculationResponse) {
 		log.Println("Fehler beim Speichern der Berechnung:", err)
 		return
 	}
-	err = os.WriteFile("berechnung.json", updatedData, 0644)
+	err = os.WriteFile("Berechnung.json", updatedData, 0644)
 	if err != nil {
 		log.Println("Fehler beim Schreiben der Datei:", err)
 	}
