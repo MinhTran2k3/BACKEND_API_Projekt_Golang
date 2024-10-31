@@ -17,33 +17,31 @@ type CalculationRequest struct {
 
 // Struct für die Antwort
 type CalculationResponse struct {
-	Ergebnis        float64 `json:"Ergebnis"`                  // Ergebnis der Berechnung
-	Fehlernachricht string  `json:"Fehlernachricht,omitempty"` // Optional: Fehlernachricht
+	Ergebnis      float64 `json:"Ergebnis"`                // Ergebnis der Berechnung
+	Fehlermeldung string  `json:"Fehlermeldung,omitempty"` // Optional: Fehlernachricht
 }
 
 func saveCalculation(calcReq CalculationRequest, calcRes CalculationResponse) {
 	// Lade vorhandene Daten
 	var calculations []map[string]interface{}
 	data, err := ioutil.ReadFile("berechnung.json")
-	if err != nil {
-		fmt.Println("Datei konnte nicht gelesen werden")
-		return
+	if err == nil {
+		json.Unmarshal(data, &calculations)
 	}
-	json.Unmarshal(data, calculations)
 
 	// Neues Ergebnis zur Liste hinzufügen
-	NeueEingabe := map[string]interface{}{
-		"Funktionsweise":  calcReq.Funktionsweise,
-		"Zahl1":           calcReq.Zahl1,
-		"Zahl2":           calcReq.Zahl2,
-		"Ergebnis":        calcRes.Ergebnis,
-		"Fehlernachricht": calcRes.Fehlernachricht,
+	newEntry := map[string]interface{}{
+		"Funktionsweise": calcReq.Funktionsweise,
+		"Zahl1":          calcReq.Zahl1,
+		"Zahl2":          calcReq.Zahl2,
+		"Ergebnis":       calcRes.Ergebnis,
+		"Fehlermeldung":  calcRes.Fehlermeldung,
 	}
-	calculations = append(calculations, NeueEingabe)
-	updatedData, _ := json.Marshal(calculations)
-	ioutil.WriteFile("berechnung.json", updatedData)
+	calculations = append(calculations, newEntry)
 
-	fmt.Print("Daten wurden gespeichert")
+	// Daten als JSON speichern
+	updatedData, _ := json.MarshalIndent(calculations, "", "  ")
+	ioutil.WriteFile("berechnung.json", updatedData, 0644)
 }
 
 // Handler für die Berechnung
@@ -73,15 +71,15 @@ func calculatorHandler(w http.ResponseWriter, r *http.Request) {
 	case "geteilt":
 		if calcReq.Zahl2 == 0 {
 			// Fehler, wenn durch 0 geteilt wird
-			calcRes.Fehlernachricht = "Teilen durch 0 ist nicht erlaubt"
-			http.Error(w, calcRes.Fehlernachricht, http.StatusBadRequest)
+			calcRes.Fehlermeldung = "Teilen durch 0 ist nicht erlaubt"
+			http.Error(w, calcRes.Fehlermeldung, http.StatusBadRequest)
 			return
 		}
 		calcRes.Ergebnis = calcReq.Zahl1 / calcReq.Zahl2 // Division
 	default:
 
-		calcRes.Fehlernachricht = "Ungültige Operation"
-		http.Error(w, calcRes.Fehlernachricht, http.StatusBadRequest)
+		calcRes.Fehlermeldung = "Ungültige Operation"
+		http.Error(w, calcRes.Fehlermeldung, http.StatusBadRequest)
 		return
 	}
 
